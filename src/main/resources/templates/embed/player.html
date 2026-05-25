@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS Audio Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff;
+            padding: 0;
+            margin: 0;
+            line-height: 1.5;
+        }
+        .player-container {
+            width: 100%;
+        }
+        .audio-player {
+            width: 100%;
+            height: 40px;
+            outline: none;
+            display: none;
+        }
+        .audio-player.show {
+            display: block;
+        }
+        /* Show audio player immediately when text is provided */
+        .audio-player.auto-load {
+            display: block;
+        }
+        .error {
+            color: #dc3545;
+            padding: 8px 12px;
+            font-size: 13px;
+            display: none;
+        }
+        .error.show {
+            display: block;
+        }
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 10px;
+        }
+        .loader.show {
+            display: block;
+        }
+        .loader-dots {
+            display: inline-block;
+        }
+        .loader-dots span {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: #666666;
+            margin: 0 2px;
+            animation: loader-bounce 1.4s infinite ease-in-out both;
+        }
+        .loader-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+        .loader-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        .loader-dots span:nth-child(3) {
+            animation-delay: 0s;
+        }
+        @keyframes loader-bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <audio id="audioPlayer" class="audio-player" controls preload="auto">
+            <source id="audioSource" type="audio/wav">
+            Your browser does not support the audio element.
+        </audio>
+        
+        <div id="loader" class="loader">
+            <div class="loader-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div id="errorMessage" class="error"></div>
+    </div>
+    
+    <script th:inline="javascript">
+        const token = /*[[${token}]]*/ '';
+        
+        // Get text from iframe attribute
+        function getTextFromIframeAttribute() {
+            try {
+                if (window.frameElement) {
+                    const textAttr = window.frameElement.getAttribute('text_to_speech');
+                    return textAttr;
+                }
+            } catch (e) {
+                console.log('Cannot access iframe attributes:', e);
+            }
+            return null;
+        }
+        
+        // Get voice ID from iframe attribute
+        function getVoiceIdFromIframeAttribute() {
+            try {
+                if (window.frameElement) {
+                    const voiceAttr = window.frameElement.getAttribute('voice_id');
+                    if (voiceAttr && ['edon', 'arta', 'arben', 'dren'].includes(voiceAttr.toLowerCase())) {
+                        return voiceAttr.toLowerCase();
+                    }
+                }
+            } catch (e) {
+                console.log('Cannot access iframe attributes:', e);
+            }
+            return null;
+        }
+        
+        function showLoader() {
+            const loader = document.getElementById('loader');
+            if (loader) {
+                loader.classList.add('show');
+            }
+        }
+        
+        function hideLoader() {
+            const loader = document.getElementById('loader');
+            if (loader) {
+                loader.classList.remove('show');
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const audioPlayer = document.getElementById('audioPlayer');
+            hideLoader();
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+            audioPlayer.classList.remove('show');
+            audioPlayer.classList.remove('auto-load');
+        }
+        
+        function hideError() {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.classList.remove('show');
+        }
+        
+        function generateAudio(text, voiceId) {
+            const audioPlayer = document.getElementById('audioPlayer');
+            const audioSource = document.getElementById('audioSource');
+            
+            if (!text) {
+                showError('Text is required');
+                return;
+            }
+            
+            hideError();
+            hideLoader();
+            showLoader(); // Show loader while loading
+            
+            const audioUrl = '/embed/audio?token=' + encodeURIComponent(token) + 
+                           '&text=' + encodeURIComponent(text) + 
+                           '&voiceId=' + encodeURIComponent(voiceId || 'edon');
+            
+            // Hide audio player initially, show loader
+            audioPlayer.classList.remove('show');
+            audioPlayer.classList.remove('auto-load');
+            
+            audioSource.src = audioUrl;
+            audioPlayer.load();
+            
+            // Hide loader and show player when audio is ready
+            audioPlayer.addEventListener('canplay', function() {
+                hideLoader();
+                audioPlayer.classList.add('show');
+                audioPlayer.classList.add('auto-load');
+            }, { once: true });
+            
+            audioPlayer.addEventListener('error', function() {
+                showError('Error loading audio');
+                audioPlayer.classList.remove('show');
+                audioPlayer.classList.remove('auto-load');
+            }, { once: true });
+        }
+        
+        // Store received postMessage data
+        let receivedText = null;
+        let receivedVoiceId = null;
+        
+        // Listen for postMessage from parent window
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'flossk-tts-play') {
+                receivedText = event.data.text;
+                receivedVoiceId = event.data.voice_id || 'edon';
+                
+                // Generate audio immediately when postMessage is received
+                if (receivedText) {
+                    generateAudio(receivedText, receivedVoiceId);
+                }
+            }
+        });
+        
+        // Function to initialize player (runs only once)
+        let initialized = false;
+        function initializePlayer() {
+            if (initialized) return;
+            initialized = true;
+            
+            // Wait a bit for postMessage to arrive
+            setTimeout(function() {
+                // Check postMessage first, then fallback to attributes
+                const text = receivedText || getTextFromIframeAttribute();
+                const voiceId = receivedVoiceId || getVoiceIdFromIframeAttribute();
+                
+                if (text) {
+                    // Text provided via postMessage or attribute - auto-load audio
+                    generateAudio(text, voiceId || 'edon');
+                } else {
+                    // No text provided - show error
+                    //showError('text_to_speech attribute is required');
+                }
+            }, 100);
+        }
+        
+        // Initialize immediately if DOM is ready, otherwise wait for DOMContentLoaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePlayer);
+        } else {
+            initializePlayer();
+        }
+    </script>
+</body>
+</html>

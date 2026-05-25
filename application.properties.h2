@@ -1,0 +1,119 @@
+# ============================================
+# External Configuration File
+# ============================================
+# This file can be placed outside the JAR and passed when running:
+# java -jar flossk-tts.jar --spring.config.location=file:./application.properties.h2
+# 
+# Or use environment variables to override any setting
+
+spring.application.name=flossk-tts
+
+# ============================================
+# Server Configuration
+# ============================================
+server.port=80
+server.address=0.0.0.0
+
+# Forward Headers (for reverse proxy/load balancer)
+# Enable this if running behind Nginx, Apache, or Cloudflare
+# This ensures request.getServerName() returns the correct domain
+server.forward-headers-strategy=native
+
+# Cloudflare Configuration Notes:
+# 1. Set Cloudflare SSL/TLS mode to "Flexible" (not Full/Full Strict)
+#    - Cloudflare Dashboard → SSL/TLS → Overview → Set to "Flexible"
+# 2. Ensure DNS record has orange cloud (proxied), not gray (DNS-only)
+# 3. Allow Cloudflare IP ranges in your firewall
+# 4. If using port 80, Cloudflare will connect via HTTP (Flexible mode)
+# 5. If you need HTTPS, configure SSL certificate and use port 443
+
+# ============================================
+# Database Configuration
+# ============================================
+# Option 1: MySQL (for production)
+# Uncomment and configure MySQL connection details:
+# spring.datasource.url=jdbc:mysql://localhost:3306/tts?useSSL=true&requireSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+# spring.datasource.driverClassName=com.mysql.cj.jdbc.Driver
+# spring.datasource.username=root
+# spring.datasource.password=
+# spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+
+# Option 2: H2 File-based (default, for development)
+# If MySQL is not configured, H2 file-based database will be used automatically
+# Database file will be created at: ./data/ttsdb
+spring.datasource.url=jdbc:h2:file:./data/ttsdb;AUTO_SERVER=TRUE
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+
+# Validation: Fail fast if MySQL URL is not set
+spring.datasource.validation-query=SELECT 1
+spring.datasource.test-on-borrow=true
+
+# Connection Pool Settings
+spring.datasource.hikari.maximum-pool-size=10
+spring.datasource.hikari.minimum-idle=5
+spring.datasource.hikari.connection-timeout=30000
+spring.datasource.hikari.idle-timeout=600000
+spring.datasource.hikari.max-lifetime=1800000
+
+# ============================================
+# JPA/Hibernate Configuration
+# ============================================
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=false
+spring.jpa.properties.hibernate.use_sql_comments=false
+
+# Performance optimizations
+spring.jpa.properties.hibernate.jdbc.batch_size=20
+spring.jpa.properties.hibernate.order_inserts=true
+spring.jpa.properties.hibernate.order_updates=true
+
+# ============================================
+# H2 Console (Disable in Production)
+# ============================================
+spring.h2.console.enabled=true
+
+# ============================================
+# Cache Configuration
+# ============================================
+# Directory where generated audio files are cached
+tts.cache.directory=./cache
+# Or use absolute path: tts.cache.directory=/var/cache/flossk-tts
+
+# ============================================
+# Logging Configuration
+# ============================================
+logging.level.root=INFO
+logging.level.com.flossk.tts=INFO
+logging.level.org.springframework.web=WARN
+logging.level.org.hibernate=WARN
+logging.level.org.springframework.security=WARN
+
+# Log file location (optional)
+# logging.file.name=./logs/application.log
+# logging.file.max-size=10MB
+# logging.file.max-history=30
+
+# ============================================
+# Server Configuration
+# ============================================
+# Maximum file upload size (for API requests)
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+
+# ============================================
+# Jackson Configuration
+# ============================================
+# Allow unescaped control characters (like newlines) in JSON strings
+spring.jackson.parser.allow-unquoted-control-chars=true
+
+# ============================================
+# Swagger/OpenAPI Configuration
+# ============================================
+springdoc.api-docs.path=/v3/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.enabled=true

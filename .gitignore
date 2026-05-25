@@ -1,33 +1,154 @@
+######################
+# Spring Boot / Java
+######################
 HELP.md
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
-### STS ###
+# Compiled / packaged
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+######################
+# Maven
+######################
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+######################
+# Gradle (if used)
+######################
+.gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+######################
+# IDE
+######################
+### IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### Eclipse / STS
 .apt_generated
 .classpath
 .factorypath
 .project
-.settings
+.settings/
 .springBeans
 .sts4-cache
+bin/
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
+### NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
+### VS Code
 .vscode/
+
+### Cursor
+.cursor/
+
+######################
+# OS
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+######################
+# Logs & temp
+######################
+logs/
+*.log
+*.log.*
+*.tmp
+*.temp
+*.swp
+*~
+Untitled
+Untitled.*
+
+######################
+# Environment & secrets
+######################
+.env
+.env.*
+!.env.example
+*.local
+application-local.properties
+application-local.yml
+application-local.yaml
+**/application-local.properties
+**/application-local.yml
+
+# Root-level runtime config with secrets (keep *.example / *.h2 templates in repo)
+/application.properties
+/application-production.properties
+!application.properties.production-example
+!application-production.properties.example
+!application.properties.h2
+
+######################
+# Database (H2 / local)
+######################
+data/
+*.mv.db
+*.trace.db
+*.lock.db
+
+######################
+# Application runtime
+######################
+cache/
+*.cache
+
+######################
+# Node (if frontend tooling present)
+######################
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+######################
+# Test / coverage
+######################
+/test-output/
+/coverage/
+*.exec
+.jacoco/
+
+######################
+# Docker / deploy artifacts
+######################
+*.pid
+*.seed
+*.pid.lock
+
+######################
+# Optional: large generated voice samples (keep .onnx models)
+######################
+src/main/resources/voices/speech_*.wav

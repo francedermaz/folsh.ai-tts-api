@@ -1,0 +1,103 @@
+# ============================================
+# Production Configuration Example
+# ============================================
+# Copy this file to application-production.properties and update with your values
+# Run with: java -jar app.jar --spring.profiles.active=production
+
+# ============================================
+# Application Settings
+# ============================================
+spring.application.name=flossk-tts
+server.port=8080
+server.address=0.0.0.0
+
+# ============================================
+# Database Configuration (MySQL - Recommended)
+# ============================================
+# MySQL is STRONGLY RECOMMENDED for production (H2 is allowed but not recommended).
+# Replace with your MySQL connection details
+spring.datasource.url=jdbc:mysql://localhost:3306/flossk_tts?useSSL=true&requireSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+spring.datasource.driverClassName=com.mysql.cj.jdbc.Driver
+spring.datasource.username=your_mysql_username
+spring.datasource.password=your_mysql_password
+
+# Validation: Fail fast if MySQL connection fails
+spring.datasource.validation-query=SELECT 1
+spring.datasource.test-on-borrow=true
+
+# Connection Pool Settings
+spring.datasource.hikari.maximum-pool-size=10
+spring.datasource.hikari.minimum-idle=5
+spring.datasource.hikari.connection-timeout=30000
+spring.datasource.hikari.idle-timeout=600000
+spring.datasource.hikari.max-lifetime=1800000
+
+# ============================================
+# JPA/Hibernate Configuration
+# ============================================
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=false
+spring.jpa.properties.hibernate.use_sql_comments=false
+
+# Performance optimizations
+spring.jpa.properties.hibernate.jdbc.batch_size=20
+spring.jpa.properties.hibernate.order_inserts=true
+spring.jpa.properties.hibernate.order_updates=true
+
+# ============================================
+# H2 Console (Disable in Production)
+# ============================================
+spring.h2.console.enabled=false
+
+# ============================================
+# Cache Configuration
+# ============================================
+# Directory where generated audio files are cached
+tts.cache.directory=/var/cache/flossk-tts
+# Or use relative path: tts.cache.directory=./cache
+
+# ============================================
+# Logging Configuration
+# ============================================
+logging.level.root=INFO
+logging.level.com.flossk.tts=INFO
+logging.level.org.springframework.web=WARN
+logging.level.org.hibernate=WARN
+logging.level.org.springframework.security=WARN
+
+# Log file location (optional)
+# logging.file.name=/var/log/flossk-tts/application.log
+# logging.file.max-size=10MB
+# logging.file.max-history=30
+
+# ============================================
+# Security Settings
+# ============================================
+# Basic Auth is used for /admin/** endpoints
+# Admin users are stored in database (default: floosk/flosskaadmin)
+
+# ============================================
+# Server Configuration
+# ============================================
+# Maximum file upload size (for API requests)
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+
+# ============================================
+# Management/Actuator (Optional)
+# ============================================
+# Uncomment to enable Spring Boot Actuator endpoints
+# management.endpoints.web.exposure.include=health,info,metrics
+# management.endpoint.health.show-details=when-authorized
+
+# ============================================
+# Environment Variables Alternative
+# ============================================
+# You can also use environment variables instead of hardcoding:
+# MYSQL_URL=jdbc:mysql://localhost:3306/flossk_tts
+# MYSQL_USER=your_username
+# MYSQL_PASSWORD=your_password
+# MYSQL_DRIVER=com.mysql.cj.jdbc.Driver
+# MYSQL_DIALECT=org.hibernate.dialect.MySQLDialect

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Key Usage History - Flossk TTS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #e5e5e5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 3px solid #2a2a2a;
+            border-radius: 0;
+            box-shadow: 8px 8px 0px rgba(220, 53, 69, 0.3);
+            padding: 30px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #2a2a2a;
+        }
+        
+        .header h1 {
+            color: #2a2a2a;
+            font-size: 28px;
+            margin: 0;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        
+        .btn-logout {
+            background: #dc3545;
+            color: #ffffff;
+            padding: 8px 16px;
+            border: 3px solid #2a2a2a;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            transition: all 0.2s;
+            box-shadow: 3px 3px 0px #2a2a2a;
+        }
+        
+        .btn-logout:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px #2a2a2a;
+            background: #c82333;
+        }
+        
+        .btn-logout:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0px #2a2a2a;
+        }
+        
+        .api-key-info {
+            background: #f8f9fa;
+            padding: 18px;
+            border: 3px solid #2a2a2a;
+            border-radius: 0;
+            margin-bottom: 25px;
+        }
+        
+        .api-key-info strong {
+            color: #2a2a2a;
+            font-weight: 900;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-right: 8px;
+        }
+        
+        .api-key-info span {
+            color: #2a2a2a;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .api-key-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .api-key-masked {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #495057;
+            letter-spacing: 2px;
+        }
+        
+        .api-key-revealed {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+            color: #495057;
+        }
+        
+        .btn-reveal {
+            background: #ffffff;
+            color: #2a2a2a;
+            padding: 3px 8px;
+            border: 2px solid #2a2a2a;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .btn-reveal:hover {
+            background: #2a2a2a;
+            color: #ffffff;
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0px #dc3545;
+        }
+        
+        .btn-reveal:active {
+            transform: translate(0, 0);
+            box-shadow: 1px 1px 0px #2a2a2a;
+        }
+        
+        .summary {
+            background: #ffffff;
+            padding: 20px;
+            border: 3px solid #2a2a2a;
+            border-radius: 0;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        
+        .summary-item {
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #2a2a2a;
+            background: #ffffff;
+        }
+        
+        .summary-label {
+            font-size: 10px;
+            color: #666666;
+            margin-bottom: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        
+        .summary-value {
+            font-size: 22px;
+            font-weight: 900;
+            color: #2a2a2a;
+        }
+        
+        .summary-value.unlimited {
+            color: #2a2a2a;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 18px;
+            background: white;
+            border: 3px solid #2a2a2a;
+            border-radius: 0;
+            overflow: hidden;
+        }
+        
+        th {
+            background: #2a2a2a;
+            color: #ffffff;
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 900;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-right: 2px solid #3a3a3a;
+        }
+        
+        th:last-child {
+            border-right: none;
+        }
+        
+        td {
+            padding: 14px 12px;
+            border-bottom: 2px solid #2a2a2a;
+            border-right: 2px solid #2a2a2a;
+            color: #2a2a2a;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        td:last-child {
+            border-right: none;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #2a2a2a;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 8px 15px;
+            border: 2px solid #2a2a2a;
+            transition: all 0.2s;
+        }
+        
+        .back-link:hover {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 35px;
+            color: #666666;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .pagination a,
+        .pagination span {
+            display: inline-block;
+            padding: 8px 14px;
+            border: 2px solid #2a2a2a;
+            color: #2a2a2a;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            transition: all 0.2s;
+            background: #ffffff;
+        }
+        
+        .pagination a:hover {
+            background: #2a2a2a;
+            color: #ffffff;
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0px #dc3545;
+        }
+        
+        .pagination .current {
+            background: #dc3545;
+            color: #ffffff;
+            border-color: #2a2a2a;
+            cursor: default;
+        }
+        
+        .pagination .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        .pagination-info {
+            text-align: center;
+            margin-top: 15px;
+            color: #666666;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        
+        .filter-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border: 3px solid #2a2a2a;
+            border-radius: 0;
+            margin-bottom: 25px;
+        }
+        
+        .filter-section h2 {
+            color: #2a2a2a;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .filter-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-size: 10px;
+            color: #2a2a2a;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 6px;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            padding: 8px 12px;
+            border: 2px solid #2a2a2a;
+            background: #ffffff;
+            color: #2a2a2a;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 0;
+        }
+        
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #dc3545;
+            box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn-filter {
+            background: #2a2a2a;
+            color: #ffffff;
+            padding: 8px 16px;
+            border: 2px solid #2a2a2a;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-filter:hover {
+            background: #dc3545;
+            border-color: #dc3545;
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0px #2a2a2a;
+        }
+        
+        .btn-clear {
+            background: #ffffff;
+            color: #2a2a2a;
+            padding: 8px 16px;
+            border: 2px solid #2a2a2a;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-clear:hover {
+            background: #f8f9fa;
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0px #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>API Key Usage History</h1>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn-logout">Logout</button>
+            </form>
+        </div>
+        
+        <div class="api-key-info">
+            <strong>Owner:</strong> <span th:text="${apiKey.ownerName}"></span><br>
+            <strong>API Key:</strong> 
+            <div class="api-key-container" style="display: inline-flex; margin-top: 4px;">
+                <span class="api-key-masked" id="masked-history">••••••••••••••••</span>
+                <span class="api-key-revealed" id="revealed-history" style="display: none;" th:text="${apiKey.key}"></span>
+                <button class="btn-reveal" onclick="toggleApiKey('history')" id="toggle-history">Show</button>
+            </div>
+            <br>
+            <strong>Remaining Tokens:</strong> 
+            <span th:if="${apiKey.tokenLimitType == null || apiKey.tokenLimitType.name() == 'UNLIMITED'}" style="color: #2a2a2a; font-weight: 900; text-transform: uppercase; letter-spacing: 0.8px;">Unlimited</span>
+            <span th:unless="${apiKey.tokenLimitType == null || apiKey.tokenLimitType.name() == 'UNLIMITED'}">
+                <span th:text="${apiKey.getEffectiveRemainingTokens()}"></span> / 
+                <span th:text="${apiKey.tokenLimitValue}"></span>
+                (<span th:text="${apiKey.tokenLimitType.name()}"></span>)
+            </span>
+        </div>
+        
+        <div class="filter-section">
+            <h2>Filters</h2>
+            <form method="get" th:action="@{/admin/api-keys/{id}/history(id=${apiKey.id})}" class="filter-form">
+                <input type="hidden" name="page" value="0"/>
+                <input type="hidden" name="size" th:value="${pageSize}"/>
+                
+                <div class="filter-group">
+                    <label for="voiceId">Voice ID</label>
+                    <select id="voiceId" name="voiceId">
+                        <option value="">All Voices</option>
+                        <option value="edon" th:selected="${filterVoiceId == 'edon'}">Edon</option>
+                        <option value="arta" th:selected="${filterVoiceId == 'arta'}">Arta</option>
+                        <option value="arben" th:selected="${filterVoiceId == 'arben'}">Arben</option>
+                        <option value="dren" th:selected="${filterVoiceId == 'dren'}">Dren</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="cached">Cached</label>
+                    <select id="cached" name="cached">
+                        <option value="">All</option>
+                        <option value="true" th:selected="${filterCached == 'true'}">Yes (Cached)</option>
+                        <option value="false" th:selected="${filterCached == 'false'}">No (Not Cached)</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="endpoint">Endpoint</label>
+                    <input type="text" id="endpoint" name="endpoint" th:value="${filterEndpoint}" placeholder="e.g., /api/tts/speak"/>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="ipAddress">IP Address</label>
+                    <input type="text" id="ipAddress" name="ipAddress" th:value="${filterIpAddress}" placeholder="e.g., 192.168.1.1 (supports Cloudflare IPs)"/>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="dateFrom">Date From</label>
+                    <input type="date" id="dateFrom" name="dateFrom" th:value="${filterDateFrom}"/>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="dateTo">Date To</label>
+                    <input type="date" id="dateTo" name="dateTo" th:value="${filterDateTo}"/>
+                </div>
+                
+                <div class="filter-actions">
+                    <button type="submit" class="btn-filter">Apply Filters</button>
+                    <a th:href="@{/admin/api-keys/{id}/history(id=${apiKey.id}, page=0, size=${pageSize})}" class="btn-clear">Clear</a>
+                </div>
+            </form>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-item">
+                <div class="summary-label">Total Tokens Used</div>
+                <div class="summary-value" th:text="${totalTokensUsed}">0</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Total Requests</div>
+                <div class="summary-value" th:text="${totalRequests}">0</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Tokens Used Today</div>
+                <div class="summary-value" th:text="${tokensUsedToday}">0</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Tokens Used This Month</div>
+                <div class="summary-value" th:text="${tokensUsedThisMonth}">0</div>
+            </div>
+            <div class="summary-item" th:if="${apiKey.tokenLimitType != null && apiKey.tokenLimitType.name() != 'UNLIMITED'}">
+                <div class="summary-label">Remaining Tokens</div>
+                <div class="summary-value" th:text="${apiKey.getEffectiveRemainingTokens()}">0</div>
+            </div>
+            <div class="summary-item" th:if="${apiKey.tokenLimitType != null && apiKey.tokenLimitType.name() != 'UNLIMITED' && apiKey.tokenLimitValue != null}">
+                <div class="summary-label">Usage Percentage</div>
+                <div class="summary-value">
+                    <span th:if="${apiKey.tokenLimitValue > 0}" 
+                          th:text="${#numbers.formatDecimal((totalTokensUsed * 100.0) / apiKey.tokenLimitValue, 1, 1)} + '%'">0%</span>
+                    <span th:unless="${apiKey.tokenLimitValue > 0}">0%</span>
+                </div>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Endpoint</th>
+                    <th>Method</th>
+                    <th>Voice ID</th>
+                    <th>Tokens Used</th>
+                    <th>Cached</th>
+                    <th>IP Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(history)}">
+                    <td colspan="7" class="empty-state">No usage history found</td>
+                </tr>
+                <tr th:each="entry : ${history}">
+                    <td th:text="${#temporals.format(entry.timestamp, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                    <td th:text="${entry.endpoint}"></td>
+                    <td th:text="${entry.requestMethod}"></td>
+                    <td th:text="${entry.voiceId != null ? entry.voiceId : '-'}"></td>
+                    <td th:text="${entry.tokensUsed}"></td>
+                    <td>
+                        <span th:if="${entry.cached != null && entry.cached}" style="color: #28a745; font-weight: 900; text-transform: uppercase; font-size: 11px;">Yes (30%)</span>
+                        <span th:unless="${entry.cached != null && entry.cached}" style="color: #2a2a2a; font-weight: 700; text-transform: uppercase; font-size: 11px;">No</span>
+                    </td>
+                    <td th:text="${entry.ipAddress != null ? entry.ipAddress : '-'}"></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div th:if="${historyPage.totalPages > 1}" class="pagination" th:with="baseUrl=${'/admin/api-keys/' + apiKey.id + '/history'}">
+            <a th:if="${historyPage.hasPrevious()}" 
+               th:href="${baseUrl + '?page=' + (historyPage.number - 1) + '&size=' + pageSize + (filterVoiceId != null && !filterVoiceId.isEmpty() ? '&voiceId=' + filterVoiceId : '') + (filterCached != null && !filterCached.isEmpty() ? '&cached=' + filterCached : '') + (filterEndpoint != null && !filterEndpoint.isEmpty() ? '&endpoint=' + filterEndpoint : '') + (filterIpAddress != null && !filterIpAddress.isEmpty() ? '&ipAddress=' + filterIpAddress : '') + (filterDateFrom != null && !filterDateFrom.isEmpty() ? '&dateFrom=' + filterDateFrom : '') + (filterDateTo != null && !filterDateTo.isEmpty() ? '&dateTo=' + filterDateTo : '')}"
+               class="page-link">← Previous</a>
+            <span th:unless="${historyPage.hasPrevious()}" class="disabled">← Previous</span>
+            
+            <span th:each="pageNum : ${#numbers.sequence(Math.max(0, historyPage.number - 2), Math.min(historyPage.totalPages - 1, historyPage.number + 2))}">
+                <a th:if="${pageNum != historyPage.number}"
+                   th:href="${baseUrl + '?page=' + pageNum + '&size=' + pageSize + (filterVoiceId != null && !filterVoiceId.isEmpty() ? '&voiceId=' + filterVoiceId : '') + (filterCached != null && !filterCached.isEmpty() ? '&cached=' + filterCached : '') + (filterEndpoint != null && !filterEndpoint.isEmpty() ? '&endpoint=' + filterEndpoint : '') + (filterIpAddress != null && !filterIpAddress.isEmpty() ? '&ipAddress=' + filterIpAddress : '') + (filterDateFrom != null && !filterDateFrom.isEmpty() ? '&dateFrom=' + filterDateFrom : '') + (filterDateTo != null && !filterDateTo.isEmpty() ? '&dateTo=' + filterDateTo : '')}"
+                   class="page-link"
+                   th:text="${pageNum + 1}">1</a>
+                <span th:if="${pageNum == historyPage.number}" 
+                      class="current"
+                      th:text="${pageNum + 1}">1</span>
+            </span>
+            
+            <a th:if="${historyPage.hasNext()}" 
+               th:href="${baseUrl + '?page=' + (historyPage.number + 1) + '&size=' + pageSize + (filterVoiceId != null && !filterVoiceId.isEmpty() ? '&voiceId=' + filterVoiceId : '') + (filterCached != null && !filterCached.isEmpty() ? '&cached=' + filterCached : '') + (filterEndpoint != null && !filterEndpoint.isEmpty() ? '&endpoint=' + filterEndpoint : '') + (filterIpAddress != null && !filterIpAddress.isEmpty() ? '&ipAddress=' + filterIpAddress : '') + (filterDateFrom != null && !filterDateFrom.isEmpty() ? '&dateFrom=' + filterDateFrom : '') + (filterDateTo != null && !filterDateTo.isEmpty() ? '&dateTo=' + filterDateTo : '')}"
+               class="page-link">Next →</a>
+            <span th:unless="${historyPage.hasNext()}" class="disabled">Next →</span>
+        </div>
+        
+        <div th:if="${historyPage.totalElements > 0}" class="pagination-info">
+            Showing <span th:text="${historyPage.number * historyPage.size + 1}">1</span> - 
+            <span th:text="${historyPage.number * historyPage.size + historyPage.numberOfElements}">50</span> 
+            of <span th:text="${historyPage.totalElements}">0</span> entries
+        </div>
+        
+        <a href="/admin" class="back-link">← Back to Dashboard</a>
+    </div>
+    
+    <script>
+        function toggleApiKey(id) {
+            var masked = document.getElementById('masked-' + id);
+            var revealed = document.getElementById('revealed-' + id);
+            var toggle = document.getElementById('toggle-' + id);
+            
+            if (masked.style.display === 'none') {
+                masked.style.display = 'inline';
+                revealed.style.display = 'none';
+                toggle.textContent = 'Show';
+            } else {
+                masked.style.display = 'none';
+                revealed.style.display = 'inline';
+                toggle.textContent = 'Hide';
+            }
+        }
+    </script>
+</body>
+</html>

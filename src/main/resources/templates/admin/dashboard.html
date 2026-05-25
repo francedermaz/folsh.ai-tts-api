@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Flossk TTS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #e5e5e5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 3px solid #2a2a2a;
+            border-radius: 0;
+            box-shadow: 8px 8px 0px rgba(220, 53, 69, 0.3);
+            padding: 30px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #2a2a2a;
+        }
+        
+        .header h1 {
+            color: #2a2a2a;
+            font-size: 28px;
+            margin: 0;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .header-actions a {
+            color: #2a2a2a;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 7px 12px;
+            border: 2px solid #2a2a2a;
+            transition: all 0.2s;
+        }
+        
+        .header-actions a:hover {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+        
+        .btn-logout {
+            background: #dc3545;
+            color: #ffffff;
+            padding: 8px 16px;
+            border: 3px solid #2a2a2a;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            transition: all 0.2s;
+            box-shadow: 3px 3px 0px #2a2a2a;
+        }
+        
+        .btn-logout:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px #2a2a2a;
+            background: #c82333;
+        }
+        
+        .btn-logout:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0px #2a2a2a;
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 0;
+            margin-bottom: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            border: 3px solid #2a2a2a;
+        }
+        
+        .alert-success {
+            background-color: #ffffff;
+            border-color: #28a745;
+            color: #28a745;
+        }
+        
+        .alert-error {
+            background-color: #ffffff;
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        
+        .form-section {
+            margin-bottom: 35px;
+            padding: 25px;
+            background: #ffffff;
+            border-radius: 0;
+            border: 3px solid #2a2a2a;
+            box-shadow: 5px 5px 0px rgba(220, 53, 69, 0.2);
+        }
+        
+        .form-section h2 {
+            color: #2a2a2a;
+            font-size: 22px;
+            margin-bottom: 25px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-bottom: 3px solid #2a2a2a;
+            padding-bottom: 12px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2a2a2a;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 11px;
+            border: 3px solid #2a2a2a;
+            border-radius: 0;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-weight: 600;
+            background: #ffffff;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
+        }
+        
+        .form-group small {
+            display: block;
+            margin-top: 6px;
+            color: #666666;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: #dc3545;
+            color: #ffffff;
+            padding: 12px 24px;
+            border: 3px solid #2a2a2a;
+            border-radius: 0;
+            font-size: 14px;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.2s;
+            box-shadow: 3px 3px 0px #2a2a2a;
+        }
+        
+        .btn-primary:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px #2a2a2a;
+            background: #c82333;
+        }
+        
+        .btn-primary:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0px #2a2a2a;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 18px;
+            background: white;
+            border: 3px solid #2a2a2a;
+            border-radius: 0;
+            overflow: hidden;
+        }
+        
+        th {
+            background: #2a2a2a;
+            color: #ffffff;
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 900;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-right: 2px solid #3a3a3a;
+        }
+        
+        th:last-child {
+            border-right: none;
+        }
+        
+        td {
+            padding: 14px 12px;
+            border-bottom: 2px solid #2a2a2a;
+            border-right: 2px solid #2a2a2a;
+            color: #2a2a2a;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        td:last-child {
+            border-right: none;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .api-key {
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            word-break: break-all;
+            color: #495057;
+        }
+        
+        .api-key-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .api-key-masked {
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            color: #495057;
+            letter-spacing: 2px;
+        }
+        
+        .api-key-revealed {
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            word-break: break-all;
+            color: #495057;
+        }
+        
+        .btn-reveal {
+            background: #ffffff;
+            color: #2a2a2a;
+            padding: 3px 8px;
+            border: 2px solid #2a2a2a;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .btn-reveal:hover {
+            background: #2a2a2a;
+            color: #ffffff;
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0px #dc3545;
+        }
+        
+        .btn-reveal:active {
+            transform: translate(0, 0);
+            box-shadow: 1px 1px 0px #2a2a2a;
+        }
+        
+        .unlimited {
+            color: #2a2a2a;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-size: 12px;
+        }
+        
+        .action-link {
+            color: #2a2a2a;
+            text-decoration: none;
+            margin-right: 12px;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 4px 8px;
+            border: 2px solid #2a2a2a;
+            transition: all 0.2s;
+        }
+        
+        .action-link:hover {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+        
+        .btn-edit {
+            background: #ffffff;
+            color: #2a2a2a;
+            padding: 5px 10px;
+            border: 2px solid #2a2a2a;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 900;
+            margin-right: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            transition: all 0.2s;
+            box-shadow: 2px 2px 0px #2a2a2a;
+        }
+        
+        .btn-edit:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0px #2a2a2a;
+            background: #f0f0f0;
+        }
+        
+        .btn-edit:active {
+            transform: translate(0, 0);
+            box-shadow: 1px 1px 0px #2a2a2a;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: #ffffff;
+            padding: 5px 10px;
+            border: 2px solid #2a2a2a;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            transition: all 0.2s;
+            box-shadow: 2px 2px 0px #2a2a2a;
+        }
+        
+        .btn-danger:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0px #2a2a2a;
+            background: #c82333;
+        }
+        
+        .btn-danger:active {
+            transform: translate(0, 0);
+            box-shadow: 1px 1px 0px #2a2a2a;
+        }
+        
+        #editFormModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ffffff;
+            padding: 30px;
+            border: 3px solid #2a2a2a;
+            border-radius: 0;
+            box-shadow: 8px 8px 0px rgba(220, 53, 69, 0.3);
+            z-index: 1000;
+            min-width: 450px;
+            max-width: 90%;
+        }
+        
+        #editFormModal h3 {
+            color: #2a2a2a;
+            font-size: 22px;
+            margin-bottom: 25px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-bottom: 3px solid #2a2a2a;
+            padding-bottom: 12px;
+        }
+        
+        #editFormModal .btn-primary {
+            margin-right: 10px;
+        }
+        
+        .btn-secondary {
+            background: #ffffff;
+            color: #2a2a2a;
+            padding: 12px 24px;
+            border: 3px solid #2a2a2a;
+            border-radius: 0;
+            font-size: 14px;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.2s;
+            box-shadow: 3px 3px 0px #2a2a2a;
+        }
+        
+        .btn-secondary:hover {
+            background: #2a2a2a;
+            color: #ffffff;
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px #2a2a2a;
+        }
+        
+        .btn-secondary:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0px #2a2a2a;
+        }
+        
+        #modalOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 35px;
+            color: #666666;
+            font-weight: 700;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>API Key Management Dashboard</h1>
+            <div class="header-actions">
+                <a href="/admin/password">Change Password</a>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn-logout">Logout</button>
+                </form>
+            </div>
+        </div>
+        
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        
+        <div class="form-section">
+            <h2>Create New API Key</h2>
+            <form th:action="@{/admin/api-keys}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="form-group">
+                    <label for="ownerName">Owner Name</label>
+                    <input type="text" id="ownerName" name="ownerName" required placeholder="Enter owner name">
+                </div>
+                <div class="form-group">
+                    <label for="tokenLimitType">Token Limit Type</label>
+                    <select id="tokenLimitType" name="tokenLimitType" onchange="updateTokenLimitInput()">
+                        <option value="unlimited">Unlimited</option>
+                        <option value="total">Total (one-time limit)</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                        <option value="once">Once (single use)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="tokenLimitValueGroup" style="display: none;">
+                    <label for="tokenLimitValue">Token Limit Value</label>
+                    <input type="number" id="tokenLimitValue" name="tokenLimitValue" min="1" placeholder="Enter token limit">
+                    <small id="tokenLimitHelp"></small>
+                </div>
+                <div class="form-group">
+                    <label for="refererDomain">Referer Domain</label>
+                    <input type="text" id="refererDomain" name="refererDomain" placeholder="example.com (optional)">
+                    <small>For iframe embeds - leave empty to allow any domain</small>
+                </div>
+                <button type="submit" class="btn-primary">Create API Key</button>
+            </form>
+        </div>
+        
+        <div class="form-section">
+            <h2>Existing API Keys</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>API Key</th>
+                        <th>Owner Name</th>
+                        <th>Token Limit</th>
+                        <th>Referer Domain</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(apiKeys)}">
+                        <td colspan="6" class="empty-state">No API keys found</td>
+                    </tr>
+                    <tr th:each="key : ${apiKeys}">
+                        <td th:text="${key.id}"></td>
+                        <td>
+                            <div class="api-key-container">
+                                <span class="api-key-masked" th:id="'masked-' + ${key.id}">••••••••••••••••</span>
+                                <span class="api-key-revealed" th:id="'revealed-' + ${key.id}" style="display: none;" th:text="${key.key}"></span>
+                                <button class="btn-reveal" 
+                                        th:onclick="'toggleApiKey(' + ${key.id} + ')'"
+                                        th:id="'toggle-' + ${key.id}">Show</button>
+                            </div>
+                        </td>
+                        <td th:text="${key.ownerName}"></td>
+                        <td>
+                            <span th:if="${key.tokenLimitType == null || key.tokenLimitType.name() == 'UNLIMITED'}" class="unlimited">Unlimited</span>
+                            <span th:unless="${key.tokenLimitType == null || key.tokenLimitType.name() == 'UNLIMITED'}">
+                                <span th:text="${key.tokenLimitType.name()}"></span>: 
+                                <span th:text="${key.getEffectiveRemainingTokens()}"></span> / 
+                                <span th:text="${key.tokenLimitValue}"></span>
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${key.refererDomain == null || key.refererDomain.isBlank()}" style="color: #999;">Not set</span>
+                            <span th:unless="${key.refererDomain == null || key.refererDomain.isBlank()}" th:text="${key.refererDomain}"></span>
+                        </td>
+                        <td>
+                            <a th:href="@{/admin/api-keys/{id}/history(id=${key.id})}" class="action-link">History</a>
+                            <a th:href="@{/admin/api-keys/{id}/iframe(id=${key.id})}" class="action-link">Iframe</a>
+                            <button class="btn-edit edit-btn" 
+                                    th:data-key-id="${key.id}"
+                                    th:data-limit-type="${key.tokenLimitType != null ? key.tokenLimitType.name() : 'UNLIMITED'}"
+                                    th:data-limit-value="${key.tokenLimitValue != null ? key.tokenLimitValue : ''}"
+                                    th:data-domain="${key.refererDomain != null && !key.refererDomain.isBlank() ? key.refererDomain : ''}">Edit</button>
+                            <form th:action="@{/admin/api-keys/{id}/delete(id=${key.id})}" method="post" style="display: inline;">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn-danger" onclick="return confirm('Are you sure you want to delete this API key?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="editFormModal">
+            <h3>Edit API Key</h3>
+            <form id="editForm" method="post" th:action="@{/admin/api-keys/0/update}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="form-group">
+                    <label for="modalTokenLimitType">Token Limit Type</label>
+                    <select id="modalTokenLimitType" name="tokenLimitType" onchange="updateModalTokenLimitInput()">
+                        <option value="unlimited">Unlimited</option>
+                        <option value="total">Total (one-time limit)</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                        <option value="once">Once (single use)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="modalTokenLimitValueGroup" style="display: none;">
+                    <label for="modalTokenLimitValue">Token Limit Value</label>
+                    <input type="number" id="modalTokenLimitValue" name="tokenLimitValue" min="1" placeholder="Enter token limit">
+                    <small id="modalTokenLimitHelp"></small>
+                </div>
+                <div class="form-group">
+                    <label for="modalRefererDomain">Referer Domain</label>
+                    <input type="text" id="modalRefererDomain" name="refererDomain" placeholder="example.com">
+                    <small>Leave empty to allow any domain</small>
+                </div>
+                <button type="submit" class="btn-primary">Update</button>
+                <button type="button" onclick="hideEditForm()" class="btn-secondary">Cancel</button>
+            </form>
+        </div>
+        
+        <div id="modalOverlay"></div>
+    </div>
+    
+    <script>
+        function updateTokenLimitInput() {
+            var type = document.getElementById('tokenLimitType').value;
+            var valueGroup = document.getElementById('tokenLimitValueGroup');
+            var helpText = document.getElementById('tokenLimitHelp');
+            
+            if (type === 'unlimited') {
+                valueGroup.style.display = 'none';
+            } else {
+                valueGroup.style.display = 'block';
+                var helpMessages = {
+                    'total': 'Total tokens available (one-time limit)',
+                    'monthly': 'Tokens available per month',
+                    'yearly': 'Tokens available per year',
+                    'once': 'Total tokens for single use (will be disabled after first use)'
+                };
+                helpText.textContent = helpMessages[type] || '';
+            }
+        }
+        
+        function updateModalTokenLimitInput() {
+            var type = document.getElementById('modalTokenLimitType').value;
+            var valueGroup = document.getElementById('modalTokenLimitValueGroup');
+            var helpText = document.getElementById('modalTokenLimitHelp');
+            
+            if (type === 'unlimited') {
+                valueGroup.style.display = 'none';
+            } else {
+                valueGroup.style.display = 'block';
+                var helpMessages = {
+                    'total': 'Total tokens available (one-time limit)',
+                    'monthly': 'Tokens available per month',
+                    'yearly': 'Tokens available per year',
+                    'once': 'Total tokens for single use (will be disabled after first use)'
+                };
+                helpText.textContent = helpMessages[type] || '';
+            }
+        }
+        
+        function showEditForm(keyId, limitType, limitValue, currentDomain) {
+            var typeSelect = document.getElementById('modalTokenLimitType');
+            var typeValue = limitType ? limitType.toLowerCase() : 'unlimited';
+            typeSelect.value = typeValue;
+            
+            document.getElementById('modalTokenLimitValue').value = limitValue || '';
+            document.getElementById('modalRefererDomain').value = currentDomain || '';
+            document.getElementById('editForm').action = '/admin/api-keys/' + keyId + '/update';
+            
+            updateModalTokenLimitInput();
+            
+            document.getElementById('editFormModal').style.display = 'block';
+            document.getElementById('modalOverlay').style.display = 'block';
+        }
+        
+        function hideEditForm() {
+            document.getElementById('editFormModal').style.display = 'none';
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+        
+        function toggleApiKey(keyId) {
+            var masked = document.getElementById('masked-' + keyId);
+            var revealed = document.getElementById('revealed-' + keyId);
+            var toggle = document.getElementById('toggle-' + keyId);
+            
+            if (masked.style.display === 'none') {
+                masked.style.display = 'inline';
+                revealed.style.display = 'none';
+                toggle.textContent = 'Show';
+            } else {
+                masked.style.display = 'none';
+                revealed.style.display = 'inline';
+                toggle.textContent = 'Hide';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('modalOverlay').addEventListener('click', hideEditForm);
+            
+            document.querySelectorAll('.edit-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var keyId = this.getAttribute('data-key-id');
+                    var limitType = this.getAttribute('data-limit-type') || 'UNLIMITED';
+                    var limitValue = this.getAttribute('data-limit-value') || '';
+                    var domain = this.getAttribute('data-domain') || '';
+                    showEditForm(keyId, limitType, limitValue, domain);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
