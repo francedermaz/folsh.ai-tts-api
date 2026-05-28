@@ -165,7 +165,7 @@ public class AdminController {
         String iframeUrl = baseUrl + "/embed/player?token=" + embedToken;
         
         // Plug-and-play: Include auto-script that reads attributes and sends postMessage
-        String exampleText = "Pershendetje, ky është zëri shqip.";
+        String exampleText = "Përshendetje, ky është zëri shqip.";
         String exampleVoice = "arta";
         String iframeId = "flossk-tts";
         String iframeCodeWithText = "<iframe id=\"" + iframeId + "\" src=\"" + iframeUrl + "\" text_to_speech=\"" + exampleText + "\" voice_id=\"" + exampleVoice + "\" width=\"500\" height=\"400\" frameborder=\"0\"></iframe>\n" +

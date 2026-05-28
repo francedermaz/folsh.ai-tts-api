@@ -355,7 +355,7 @@
         
         <h2>Preview</h2>
         <div class="preview">
-            <iframe id="preview-tts" th:src="${iframeUrl}" text_to_speech="Pershendetje, ky është zëri shqip." voice_id="arta" width="100%" height="400" frameborder="0"></iframe>
+            <iframe id="preview-tts" th:src="${iframeUrl}" text_to_speech="Përshendetje, ky është zëri shqip." voice_id="arta" width="100%" height="400" frameborder="0"></iframe>
             <script>(function(){var i=document.getElementById('preview-tts');i.onload=function(){var t=i.getAttribute('text_to_speech'),v=i.getAttribute('voice_id')||'edon';if(t)i.contentWindow.postMessage({type:'flossk-tts-play',text:t,voice_id:v},'*');};})();</script>
         </div>
         
