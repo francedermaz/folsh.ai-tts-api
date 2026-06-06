@@ -93,7 +93,7 @@ public class EmbedController {
             // Reload from database to get updated values
             userApiKey = apiKeyRepository.findById(userApiKey.getId()).orElse(userApiKey);
             
-            // Normalize text: replace newlines with " ."
+            // Normalize text before TTS
             String normalizedText = ttsService.normalizeText(text);
             
             // Check with full token count first (worst case scenario)

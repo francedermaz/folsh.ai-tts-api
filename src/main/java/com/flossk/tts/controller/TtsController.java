@@ -93,7 +93,7 @@ public class TtsController {
                 return ResponseEntity.notFound().build();
             }
             
-            // Normalize text: replace newlines with " ."
+            // Normalize text before TTS
             String normalizedText = ttsService.normalizeText(text);
             
             UserApiKey userApiKey = (UserApiKey) request.getAttribute("userApiKey");

@@ -22,6 +22,7 @@ public class TtsService {
     
     private static final Logger logger = LoggerFactory.getLogger(TtsService.class);
     private final VoiceManagerService voiceManagerService;
+    private final TextNormalizationService textNormalizationService;
     private final String cacheDirectory;
     
     public static class GenerationResult {
@@ -49,8 +50,10 @@ public class TtsService {
     }
     
     public TtsService(VoiceManagerService voiceManagerService,
+                     TextNormalizationService textNormalizationService,
                      @Value("${tts.cache.directory:cache}") String cacheDirectory) {
         this.voiceManagerService = voiceManagerService;
+        this.textNormalizationService = textNormalizationService;
         this.cacheDirectory = cacheDirectory;
         initializeCacheDirectory();
     }
@@ -68,21 +71,20 @@ public class TtsService {
     }
     
     /**
-     * Normalizes text for TTS processing by replacing newlines with " ."
-     * Handles both Unix (\n) and Windows (\r\n) line endings
+     * Normalizes text for TTS processing: line breaks and Albanian pronunciation rules.
      */
     public String normalizeText(String text) {
         if (text == null) {
             return null;
         }
-        // Replace Windows line endings (\r\n) first, then Unix (\n), then Mac (\r)
-        return text.replace("\r\n", " . ")
-                   .replace("\n", " . ")
-                   .replace("\r", " . ");
+        String withLineBreaks = text.replace("\r\n", "'")
+                                    .replace("\n", "'")
+                                    .replace("\r", "'");
+        return textNormalizationService.normalizeForTts(withLineBreaks);
     }
     
     public GenerationResult generateSpeech(String text, String voiceId) throws IOException {
-        // Normalize text: replace newlines with " ."
+        // Normalize text before TTS
         String normalizedText = normalizeText(text);
         
         String cacheKey = generateCacheKey(normalizedText, voiceId);
