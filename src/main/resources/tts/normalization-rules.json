@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "paragraphEndingPunctuation": true,
+  "preprocessing": [
+    {
+      "pattern": "(?<=\\d),(?=\\d{3})",
+      "replacement": "",
+      "repeatUntilStable": true,
+      "note": "Remove comma thousand separators (616,967 -> 616967)"
+    },
+    {
+      "pattern": "(?<=\\d)\\.(?=\\d{3})",
+      "replacement": "",
+      "repeatUntilStable": true,
+      "note": "Remove dot thousand separators (1.234.567 -> 1234567)"
+    }
+  ],
+  "replacements": [
+    {
+      "pattern": "(?<![\\d])-(\\d+(?:[.,]\\d+)?)",
+      "replacement": "minus $1",
+      "note": "Speak leading minus on numbers (-14.77 -> minus 14.77)"
+    },
+    {
+      "pattern": "\\s*%",
+      "replacement": " për qind",
+      "note": "Percent sign"
+    },
+    {
+      "pattern": "\\s*&\\s*",
+      "replacement": " dhe ",
+      "note": "Ampersand"
+    },
+    {
+      "pattern": "@",
+      "replacement": " at ",
+      "note": "At sign"
+    },
+    {
+      "pattern": "€",
+      "replacement": " euro ",
+      "note": "Euro"
+    },
+    {
+      "pattern": "\\$",
+      "replacement": " dollar ",
+      "note": "Dollar"
+    },
+    {
+      "pattern": "£",
+      "replacement": " pound ",
+      "note": "Pound"
+    }
+  ],
+  "tokens": [
+    { "match": "GWh", "say": "giga vat orë", "note": "Energy - longer units first" },
+    { "match": "MWh", "say": "mega vat" },
+    { "match": "kWh", "say": "kilo vat" },
+    { "match": "Wh", "say": "vat orë" },
+    { "match": "GW", "say": "giga vat" },
+    { "match": "MW", "say": "mega vat" },
+    { "match": "kW", "say": "kilo vat" },
+    { "match": "km/h", "say": "kilometra në orë" },
+    { "match": "km²", "say": "kilometra katrorë" },
+    { "match": "km2", "say": "kilometra katrorë" },
+    { "match": "m²", "say": "metra katrorë" },
+    { "match": "m2", "say": "metra katrorë" },
+    { "match": "cm²", "say": "centimetra katrorë" },
+    { "match": "cm2", "say": "centimetra katrorë" },
+    { "match": "ha", "say": "hektarë" },
+    { "match": "km", "say": "kilometra" },
+    { "match": "cm", "say": "centimetra" },
+    { "match": "mm", "say": "milimetra" },
+    { "match": "kg", "say": "kilogram" },
+    { "match": "mg", "say": "miligram" },
+    { "match": "lt", "say": "litra" },
+    { "match": "ml", "say": "mililitra" },
+    { "match": "p.sh.", "say": "për shembull" },
+    { "match": "p.sh", "say": "për shembull" },
+    { "match": "nr.", "say": "numri" },
+    { "match": "nr", "say": "numri" },
+    { "match": "etj.", "say": "etjetera" },
+    { "match": "etj", "say": "etjetera" },
+    { "match": "bashk.", "say": "bashkë" },
+    { "match": "bashk", "say": "bashkë" },
+    { "match": "prof.", "say": "profesor" },
+    { "match": "prof", "say": "profesor" },
+    { "match": "dr.", "say": "doktor" },
+    { "match": "dr", "say": "doktor" }
+  ],
+  "doubleStandaloneLetters": ["u", "i", "e"]
+}

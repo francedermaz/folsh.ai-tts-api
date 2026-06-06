@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Normalization Rules - Flossk TTS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #e5e5e5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 3px solid #2a2a2a;
+            box-shadow: 8px 8px 0px rgba(220, 53, 69, 0.3);
+            padding: 30px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #2a2a2a;
+        }
+        .header h1 {
+            color: #2a2a2a;
+            font-size: 28px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .header-actions a {
+            color: #2a2a2a;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 7px 12px;
+            border: 2px solid #2a2a2a;
+            background: #ffffff;
+            transition: all 0.2s;
+        }
+        .header-actions a:hover {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+        .btn-logout {
+            background: #dc3545;
+            color: #ffffff;
+            padding: 8px 16px;
+            border: 3px solid #2a2a2a;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        .alert {
+            padding: 15px 18px;
+            border: 3px solid #2a2a2a;
+            margin-bottom: 20px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .alert-success { background: #ffffff; border-color: #28a745; color: #155724; }
+        .alert-error { background: #ffffff; border-color: #dc3545; color: #721c24; }
+        .info-box {
+            background: #f8f9fa;
+            border: 3px solid #2a2a2a;
+            padding: 15px 18px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2a2a2a;
+        }
+        .info-box code {
+            background: #ffffff;
+            padding: 2px 6px;
+            border: 2px solid #2a2a2a;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .section {
+            border: 3px solid #2a2a2a;
+            margin-bottom: 24px;
+            background: #ffffff;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+        .section-header h2 {
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .section-header p {
+            font-size: 11px;
+            font-weight: 600;
+            opacity: 0.85;
+            margin-top: 4px;
+        }
+        .section-body { padding: 18px; }
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 6px;
+            color: #2a2a2a;
+        }
+        .field input[type="text"],
+        .field input[type="number"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #2a2a2a;
+            font-size: 13px;
+            background: #ffffff;
+        }
+        .field input:focus {
+            outline: none;
+            box-shadow: 3px 3px 0px rgba(220, 53, 69, 0.3);
+        }
+        .checkbox-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 28px;
+        }
+        .checkbox-field input { width: 18px; height: 18px; }
+        .checkbox-field label {
+            margin: 0;
+            font-size: 13px;
+            text-transform: none;
+            font-weight: 700;
+        }
+        .rules-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .rules-table th {
+            text-align: left;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 10px 8px;
+            border-bottom: 3px solid #2a2a2a;
+            background: #f8f9fa;
+        }
+        .rules-table td {
+            padding: 8px;
+            vertical-align: top;
+            border-bottom: 1px solid #ddd;
+        }
+        .rules-table input[type="text"] {
+            width: 100%;
+            padding: 8px 10px;
+            border: 2px solid #2a2a2a;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+        }
+        .rules-table input[type="text"].note-input {
+            font-family: inherit;
+        }
+        .rules-table .col-actions { width: 70px; text-align: center; }
+        .rules-table .col-check { width: 90px; text-align: center; }
+        .btn-row {
+            background: #ffffff;
+            color: #dc3545;
+            border: 2px solid #dc3545;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        .btn-row:hover { background: #dc3545; color: #ffffff; }
+        .btn-add {
+            margin-top: 12px;
+            background: #ffffff;
+            color: #2a2a2a;
+            border: 2px solid #2a2a2a;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        .btn-add:hover { background: #2a2a2a; color: #ffffff; }
+        .letters-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .letter-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .letter-chip input {
+            width: 48px;
+            padding: 8px;
+            border: 2px solid #2a2a2a;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-save {
+            background: #2a2a2a;
+            color: #ffffff;
+            padding: 12px 24px;
+            border: 3px solid #2a2a2a;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 3px 3px 0px #dc3545;
+        }
+        .btn-save:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px #dc3545;
+        }
+        .btn-reset {
+            background: #ffffff;
+            color: #dc3545;
+            padding: 12px 24px;
+            border: 3px solid #dc3545;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-reset:hover { background: #dc3545; color: #ffffff; }
+        .btn-download {
+            display: inline-block;
+            background: #ffffff;
+            color: #2a2a2a;
+            padding: 12px 24px;
+            border: 3px solid #2a2a2a;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+        }
+        .btn-download:hover { background: #2a2a2a; color: #ffffff; }
+        .empty-hint {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            padding: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Normalization Rules</h1>
+            <div class="header-actions">
+                <a href="/admin">Dashboard</a>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn-logout">Logout</button>
+                </form>
+            </div>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <div class="info-box">
+            <strong>File:</strong> <code th:text="${rulesPath}"></code>
+            — validated, saved, and reloaded immediately on save.
+        </div>
+
+        <form th:action="@{/admin/normalization-rules}" th:object="${rules}" method="post" id="rulesForm">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="section">
+                <div class="section-header">
+                    <div>
+                        <h2>General</h2>
+                        <p>Global normalization settings</p>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="field-grid">
+                        <div class="field">
+                            <label for="version">Version</label>
+                            <input type="number" id="version" th:field="*{version}" min="1"/>
+                        </div>
+                        <div class="field">
+                            <div class="checkbox-field">
+                                <input type="checkbox" id="paragraphEndingPunctuation" th:field="*{paragraphEndingPunctuation}"/>
+                                <label for="paragraphEndingPunctuation">Add period at end of paragraphs when missing</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div>
+                        <h2>Preprocessing</h2>
+                        <p>Regex steps run first (e.g. thousand separators). Enable repeat for multi-pass rules.</p>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <table class="rules-table">
+                        <thead>
+                            <tr>
+                                <th>Pattern (regex)</th>
+                                <th>Replacement</th>
+                                <th class="col-check">Repeat</th>
+                                <th>Note</th>
+                                <th class="col-actions"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="preprocessing-body">
+                            <tr class="rule-row" th:each="rule, stat : *{preprocessing}">
+                                <td><input type="text" th:field="*{preprocessing[__${stat.index}__].pattern}" placeholder="(?&lt;=\d),(?=\d{3})"/></td>
+                                <td><input type="text" th:field="*{preprocessing[__${stat.index}__].replacement}"/></td>
+                                <td class="col-check"><input type="checkbox" th:field="*{preprocessing[__${stat.index}__].repeatUntilStable}"/></td>
+                                <td><input type="text" class="note-input" th:field="*{preprocessing[__${stat.index}__].note}"/></td>
+                                <td class="col-actions"><button type="button" class="btn-row btn-remove">Remove</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="empty-hint" id="preprocessing-empty" th:if="*{#lists.isEmpty(preprocessing)}">No preprocessing rules yet.</p>
+                    <button type="button" class="btn-add" data-add="preprocessing">+ Add preprocessing rule</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div>
+                        <h2>Replacements</h2>
+                        <p>Regex find/replace (% → për qind, minus, currency symbols)</p>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <table class="rules-table">
+                        <thead>
+                            <tr>
+                                <th>Pattern (regex)</th>
+                                <th>Replacement</th>
+                                <th>Note</th>
+                                <th class="col-actions"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="replacements-body">
+                            <tr class="rule-row" th:each="rule, stat : *{replacements}">
+                                <td><input type="text" th:field="*{replacements[__${stat.index}__].pattern}"/></td>
+                                <td><input type="text" th:field="*{replacements[__${stat.index}__].replacement}"/></td>
+                                <td><input type="text" class="note-input" th:field="*{replacements[__${stat.index}__].note}"/></td>
+                                <td class="col-actions"><button type="button" class="btn-row btn-remove">Remove</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="empty-hint" id="replacements-empty" th:if="*{#lists.isEmpty(replacements)}">No replacement rules yet.</p>
+                    <button type="button" class="btn-add" data-add="replacements">+ Add replacement rule</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div>
+                        <h2>Tokens</h2>
+                        <p>Word-boundary replacements (MWh → mega vat). Order matters — longer matches first.</p>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <table class="rules-table">
+                        <thead>
+                            <tr>
+                                <th>Match</th>
+                                <th>Say</th>
+                                <th>Note</th>
+                                <th class="col-actions"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tokens-body">
+                            <tr class="rule-row" th:each="rule, stat : *{tokens}">
+                                <td><input type="text" th:field="*{tokens[__${stat.index}__].match}"/></td>
+                                <td><input type="text" th:field="*{tokens[__${stat.index}__].say}"/></td>
+                                <td><input type="text" class="note-input" th:field="*{tokens[__${stat.index}__].note}"/></td>
+                                <td class="col-actions"><button type="button" class="btn-row btn-remove">Remove</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="empty-hint" id="tokens-empty" th:if="*{#lists.isEmpty(tokens)}">No token rules yet.</p>
+                    <button type="button" class="btn-add" data-add="tokens">+ Add token rule</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div>
+                        <h2>Double Standalone Letters</h2>
+                        <p>Letters doubled when they appear as standalone words (e.g. e → ee)</p>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="letters-list" id="letters-body">
+                        <div class="letter-chip" th:each="letter, stat : *{doubleStandaloneLetters}">
+                            <input type="text" maxlength="1" th:field="*{doubleStandaloneLetters[__${stat.index}__]}"/>
+                            <button type="button" class="btn-row btn-remove-letter">×</button>
+                        </div>
+                    </div>
+                    <p class="empty-hint" id="letters-empty" th:if="*{#lists.isEmpty(doubleStandaloneLetters)}">No letters configured.</p>
+                    <button type="button" class="btn-add" id="add-letter">+ Add letter</button>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn-save">Save &amp; Reload</button>
+                <a class="btn-download" th:href="@{/admin/normalization-rules/download}">Download JSON</a>
+            </div>
+        </form>
+
+        <form th:action="@{/admin/normalization-rules/reset}" method="post" style="margin-top: 12px; display: inline-block;"
+              onsubmit="return confirm('Reset to bundled default rules? Your local changes will be lost.');">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn-reset">Reset to Defaults</button>
+        </form>
+    </div>
+
+    <template id="preprocessing-template">
+        <tr class="rule-row">
+            <td><input type="text" name="preprocessing[INDEX].pattern"/></td>
+            <td><input type="text" name="preprocessing[INDEX].replacement"/></td>
+            <td class="col-check">
+                <input type="hidden" name="preprocessing[INDEX].repeatUntilStable" value="false"/>
+                <input type="checkbox" name="preprocessing[INDEX].repeatUntilStable" value="true"/>
+            </td>
+            <td><input type="text" class="note-input" name="preprocessing[INDEX].note"/></td>
+            <td class="col-actions"><button type="button" class="btn-row btn-remove">Remove</button></td>
+        </tr>
+    </template>
+
+    <template id="replacements-template">
+        <tr class="rule-row">
+            <td><input type="text" name="replacements[INDEX].pattern"/></td>
+            <td><input type="text" name="replacements[INDEX].replacement"/></td>
+            <td><input type="text" class="note-input" name="replacements[INDEX].note"/></td>
+            <td class="col-actions"><button type="button" class="btn-row btn-remove">Remove</button></td>
+        </tr>
+    </template>
+
+    <template id="tokens-template">
+        <tr class="rule-row">
+            <td><input type="text" name="tokens[INDEX].match"/></td>
+            <td><input type="text" name="tokens[INDEX].say"/></td>
+            <td><input type="text" class="note-input" name="tokens[INDEX].note"/></td>
+            <td class="col-actions"><button type="button" class="btn-row btn-remove">Remove</button></td>
+        </tr>
+    </template>
+
+    <template id="letter-template">
+        <div class="letter-chip">
+            <input type="text" maxlength="1" name="doubleStandaloneLetters[INDEX]"/>
+            <button type="button" class="btn-row btn-remove-letter">×</button>
+        </div>
+    </template>
+
+    <script>
+        function reindexNames(container, prefix) {
+            const rows = container.querySelectorAll('.rule-row, .letter-chip');
+            rows.forEach((row, index) => {
+                row.querySelectorAll('[name]').forEach(input => {
+                    input.name = input.name.replace(new RegExp('^' + prefix + '\\[\\d+\\]'), prefix + '[' + index + ']');
+                });
+            });
+        }
+
+        function updateEmptyHint(bodyId, hintId) {
+            const body = document.getElementById(bodyId);
+            const hint = document.getElementById(hintId);
+            if (!hint) return;
+            const count = body.querySelectorAll('.rule-row').length;
+            hint.style.display = count === 0 ? 'block' : 'none';
+        }
+
+        function addRow(section) {
+            const template = document.getElementById(section + '-template');
+            const body = document.getElementById(section + '-body');
+            const index = body.querySelectorAll('.rule-row').length;
+            const html = template.innerHTML.replace(/INDEX/g, index);
+            body.insertAdjacentHTML('beforeend', html);
+            updateEmptyHint(section + '-body', section + '-empty');
+        }
+
+        function removeRow(button) {
+            const row = button.closest('.rule-row');
+            const body = row.parentElement;
+            const section = body.id.replace('-body', '');
+            row.remove();
+            reindexNames(body, section);
+            updateEmptyHint(body.id, section + '-empty');
+        }
+
+        function addLetter() {
+            const body = document.getElementById('letters-body');
+            const template = document.getElementById('letter-template');
+            const index = body.querySelectorAll('.letter-chip').length;
+            const html = template.innerHTML.replace(/INDEX/g, index);
+            body.insertAdjacentHTML('beforeend', html);
+            document.getElementById('letters-empty').style.display = 'none';
+        }
+
+        function removeLetter(button) {
+            const chip = button.closest('.letter-chip');
+            const body = document.getElementById('letters-body');
+            chip.remove();
+            reindexNames(body, 'doubleStandaloneLetters');
+            const count = body.querySelectorAll('.letter-chip').length;
+            document.getElementById('letters-empty').style.display = count === 0 ? 'block' : 'none';
+        }
+
+        document.querySelectorAll('[data-add]').forEach(btn => {
+            btn.addEventListener('click', () => addRow(btn.dataset.add));
+        });
+
+        document.getElementById('add-letter').addEventListener('click', addLetter);
+
+        document.addEventListener('click', (event) => {
+            if (event.target.classList.contains('btn-remove')) {
+                removeRow(event.target);
+            }
+            if (event.target.classList.contains('btn-remove-letter')) {
+                removeLetter(event.target);
+            }
+        });
+
+        document.getElementById('rulesForm').addEventListener('submit', () => {
+            reindexNames(document.getElementById('preprocessing-body'), 'preprocessing');
+            reindexNames(document.getElementById('replacements-body'), 'replacements');
+            reindexNames(document.getElementById('tokens-body'), 'tokens');
+            reindexNames(document.getElementById('letters-body'), 'doubleStandaloneLetters');
+        });
+    </script>
+</body>
+</html>

@@ -77,7 +77,8 @@ public class TtsService {
         if (text == null) {
             return null;
         }
-        String withLineBreaks = text.replace("\r\n", "'")
+        String withPunctuation = textNormalizationService.ensureParagraphEndingPunctuation(text);
+        String withLineBreaks = withPunctuation.replace("\r\n", "'")
                                     .replace("\n", "'")
                                     .replace("\r", "'");
         return textNormalizationService.normalizeForTts(withLineBreaks);

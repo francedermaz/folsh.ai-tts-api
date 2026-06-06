@@ -1,5 +1,7 @@
 package com.flossk.tts.controller;
 
+import com.flossk.tts.dto.NormalizeRequest;
+import com.flossk.tts.dto.NormalizeResponse;
 import com.flossk.tts.dto.SpeakRequest;
 import com.flossk.tts.entity.ApiKeyUsageHistory;
 import com.flossk.tts.entity.GenerationLog;
@@ -174,6 +176,25 @@ public class TtsController {
             logger.error("Error generating speech", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @Operation(
+        summary = "Normalize text for TTS",
+        description = "Applies the same text normalization used before speech generation (paragraph punctuation, units, symbols, etc.) and returns the normalized text. Does not generate audio or consume tokens."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully normalized text",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = NormalizeResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Missing or invalid API key")
+    })
+    @PostMapping("/normalize")
+    public ResponseEntity<NormalizeResponse> normalize(@Valid @RequestBody NormalizeRequest requestBody) {
+        if (requestBody.getText() == null || requestBody.getText().isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        String normalizedText = ttsService.normalizeText(requestBody.getText());
+        return ResponseEntity.ok(new NormalizeResponse(normalizedText));
     }
     
 }

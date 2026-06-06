@@ -1,5 +1,9 @@
 package com.flossk.tts.service;
 
+import com.flossk.tts.normalization.CompiledNormalizationRules;
+import com.flossk.tts.normalization.CompiledRegexRule;
+import com.flossk.tts.normalization.CompiledTokenRule;
+import com.flossk.tts.normalization.NormalizationRulesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -11,77 +15,59 @@ public class TextNormalizationService {
 
     private static final Logger logger = LoggerFactory.getLogger(TextNormalizationService.class);
 
-    private static final String WORD_BOUNDARY_PREFIX = "(?<![A-Za-zÀ-ÖØ-öø-ÿ])";
-    private static final String WORD_BOUNDARY_SUFFIX = "(?![A-Za-zÀ-ÖØ-öø-ÿ])";
+    private final NormalizationRulesService rulesService;
 
-    private record Rule(Pattern pattern, String replacement) {}
+    public TextNormalizationService(NormalizationRulesService rulesService) {
+        this.rulesService = rulesService;
+    }
 
-    private static final Rule[] RULES = {
-        // Energy (longer units first)
-        rule("GWh", "gigavat orë"),
-        rule("MWh", "megavat"),
-        rule("kWh", "kilovat"),
-        rule("Wh", "vat orë"),
-        rule("GW", "gigavat"),
-        rule("MW", "megavat"),
-        rule("kW", "kilovat"),
+    public String ensureParagraphEndingPunctuation(String text) {
+        if (text == null || text.isBlank()) {
+            return text;
+        }
 
-        // Speed and area
-        rule("km/h", "kilometra në orë"),
-        rule("km²", "kilometra katrorë"),
-        rule("km2", "kilometra katrorë"),
-        rule("m²", "metra katrorë"),
-        rule("m2", "metra katrorë"),
-        rule("cm²", "centimetra katrorë"),
-        rule("cm2", "centimetra katrorë"),
-        rule("ha", "hektarë"),
+        CompiledNormalizationRules rules = rulesService.getRules();
+        if (!rules.paragraphEndingPunctuation()) {
+            return text.strip();
+        }
 
-        // Length and mass
-        rule("km", "kilometra"),
-        rule("cm", "centimetra"),
-        rule("mm", "milimetra"),
-        rule("kg", "kilogram"),
-        rule("mg", "miligram"),
-        rule("lt", "litra"),
-        rule("ml", "mililitra"),
+        String[] paragraphs = rules.paragraphBreak().split(text.strip());
+        StringBuilder result = new StringBuilder();
 
-        // Common abbreviations
-        rule("p.sh.", "për shembull"),
-        rule("p.sh", "për shembull"),
-        rule("nr.", "numri"),
-        rule("nr", "numri"),
-        rule("etj.", "etjetera"),
-        rule("etj", "etjetera"),
-        rule("bashk.", "bashkë"),
-        rule("bashk", "bashkë"),
-        rule("prof.", "profesor"),
-        rule("prof", "profesor"),
-        rule("dr.", "doktor"),
-        rule("dr", "doktor"),
-    };
+        for (String paragraph : paragraphs) {
+            String trimmed = paragraph.strip();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            if (!endsWithTerminalPunctuation(trimmed)) {
+                trimmed = trimmed + ".";
+            }
+            if (result.length() > 0) {
+                result.append("\n\n");
+            }
+            result.append(trimmed);
+        }
 
-    private static final Pattern PERCENT = Pattern.compile("\\s*%");
-    private static final Pattern AMPERSAND = Pattern.compile("\\s*&\\s*");
-    private static final Pattern AT_SIGN = Pattern.compile("@");
-    private static final Pattern EURO = Pattern.compile("€");
-    private static final Pattern DOLLAR = Pattern.compile("\\$");
-    private static final Pattern POUND = Pattern.compile("£");
+        return result.length() > 0 ? result.toString() : text.strip();
+    }
 
     public String normalizeForTts(String text) {
         if (text == null) {
             return null;
         }
 
+        CompiledNormalizationRules rules = rulesService.getRules();
         String result = text;
-        result = PERCENT.matcher(result).replaceAll(" për qind");
-        result = AMPERSAND.matcher(result).replaceAll(" dhe ");
-        result = AT_SIGN.matcher(result).replaceAll(" at ");
-        result = EURO.matcher(result).replaceAll(" euro ");
-        result = DOLLAR.matcher(result).replaceAll(" dollar ");
-        result = POUND.matcher(result).replaceAll(" pound ");
 
-        for (Rule rule : RULES) {
-            result = rule.pattern().matcher(result).replaceAll(rule.replacement());
+        result = applyRegexRules(result, rules.preprocessing());
+        result = applyRegexRules(result, rules.replacements());
+
+        for (CompiledTokenRule tokenRule : rules.tokens()) {
+            result = tokenRule.pattern().matcher(result).replaceAll(tokenRule.replacement());
+        }
+
+        for (Pattern pattern : rules.doubleStandaloneLetterPatterns()) {
+            result = doubleStandaloneLetter(result, pattern);
         }
 
         if (logger.isDebugEnabled() && !result.equals(text)) {
@@ -91,13 +77,31 @@ public class TextNormalizationService {
         return result;
     }
 
-    private static Rule rule(String token, String spoken) {
-        return new Rule(
-            Pattern.compile(
-                WORD_BOUNDARY_PREFIX + Pattern.quote(token) + WORD_BOUNDARY_SUFFIX,
-                Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
-            ),
-            spoken
-        );
+    private static String applyRegexRules(String text, java.util.List<CompiledRegexRule> regexRules) {
+        String result = text;
+        for (CompiledRegexRule rule : regexRules) {
+            if (rule.repeatUntilStable()) {
+                String previous;
+                do {
+                    previous = result;
+                    result = rule.pattern().matcher(result).replaceAll(rule.replacement());
+                } while (!result.equals(previous));
+            } else {
+                result = rule.pattern().matcher(result).replaceAll(rule.replacement());
+            }
+        }
+        return result;
+    }
+
+    private static boolean endsWithTerminalPunctuation(String text) {
+        if (text.isEmpty()) {
+            return true;
+        }
+        char last = text.charAt(text.length() - 1);
+        return last == '.' || last == '!' || last == '?' || last == '…';
+    }
+
+    private static String doubleStandaloneLetter(String text, Pattern pattern) {
+        return pattern.matcher(text).replaceAll(match -> match.group() + match.group());
     }
 }

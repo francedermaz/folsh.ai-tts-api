@@ -6,6 +6,8 @@ import com.flossk.tts.entity.UserApiKey;
 import com.flossk.tts.repository.AdminUserRepository;
 import com.flossk.tts.repository.ApiKeyUsageHistoryRepository;
 import com.flossk.tts.repository.UserApiKeyRepository;
+import com.flossk.tts.normalization.NormalizationRulesDefinition;
+import com.flossk.tts.normalization.NormalizationRulesService;
 import com.flossk.tts.service.EmbedTokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
@@ -15,9 +17,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,17 +36,20 @@ public class AdminController {
     private final AdminUserRepository adminUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmbedTokenService embedTokenService;
+    private final NormalizationRulesService normalizationRulesService;
     
     public AdminController(UserApiKeyRepository apiKeyRepository,
                           ApiKeyUsageHistoryRepository usageHistoryRepository,
                           AdminUserRepository adminUserRepository,
                           PasswordEncoder passwordEncoder,
-                          EmbedTokenService embedTokenService) {
+                          EmbedTokenService embedTokenService,
+                          NormalizationRulesService normalizationRulesService) {
         this.apiKeyRepository = apiKeyRepository;
         this.usageHistoryRepository = usageHistoryRepository;
         this.adminUserRepository = adminUserRepository;
         this.passwordEncoder = passwordEncoder;
         this.embedTokenService = embedTokenService;
+        this.normalizationRulesService = normalizationRulesService;
     }
     
     @GetMapping
@@ -184,6 +193,49 @@ public class AdminController {
     @GetMapping("/password")
     public String passwordChangeForm(Model model) {
         return "admin/password-change";
+    }
+
+    @GetMapping("/normalization-rules")
+    public String normalizationRulesEditor(Model model) throws Exception {
+        if (!model.containsAttribute("rules")) {
+            model.addAttribute("rules", normalizationRulesService.loadRulesDefinition());
+        }
+        model.addAttribute("rulesPath", normalizationRulesService.getRulesPath().toString());
+        return "admin/normalization-rules";
+    }
+
+    @PostMapping("/normalization-rules")
+    public String saveNormalizationRules(
+            @ModelAttribute("rules") NormalizationRulesDefinition rules,
+            RedirectAttributes redirectAttributes) {
+        try {
+            normalizationRulesService.saveRulesDefinition(rules);
+            redirectAttributes.addFlashAttribute("success", "Normalization rules saved and reloaded");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to save rules: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("rules", rules);
+        }
+        return "redirect:/admin/normalization-rules";
+    }
+
+    @PostMapping("/normalization-rules/reset")
+    public String resetNormalizationRules(RedirectAttributes redirectAttributes) {
+        try {
+            normalizationRulesService.resetToDefaults();
+            redirectAttributes.addFlashAttribute("success", "Normalization rules reset to defaults");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to reset rules: " + e.getMessage());
+        }
+        return "redirect:/admin/normalization-rules";
+    }
+
+    @GetMapping("/normalization-rules/download")
+    public ResponseEntity<byte[]> downloadNormalizationRules() throws Exception {
+        String content = normalizationRulesService.readRulesFileContent();
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"normalization-rules.json\"")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(content.getBytes(StandardCharsets.UTF_8));
     }
     
     @PostMapping("/password")
