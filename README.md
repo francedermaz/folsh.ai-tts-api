@@ -764,7 +764,7 @@ See `PRODUCTION_SETUP.md` for comprehensive production deployment instructions i
 
 ## License
 
-[Your License Here]
+**License:** [GNU Affero General Public License v3.0 (AGPL-3.0)](https://opensource.org/license/agpl-3-0)
 
 ## Support
 
