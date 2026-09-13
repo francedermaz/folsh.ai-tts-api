@@ -5,12 +5,12 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=flossktts
-Group=flossktts
-WorkingDirectory=/opt/flossk-tts
+User=root
+Group=root
+WorkingDirectory=/home/flossk-tts
 
 # Adjust Java path / jar / config as needed
-ExecStart=/usr/bin/java -jar /opt/flossk-tts/flossk-tts.jar --spring.config.location=file:/opt/flossk-tts/application.properties
+ExecStart=java -Xms2g -Xmx2g -jar /home/flossk-tts/flossk-tts.jar --spring.config.location=file:/home/flossk-tts/application.properties
 
 # Auto-restart on crash / exit
 Restart=always
@@ -23,7 +23,7 @@ StandardError=journal
 SyslogIdentifier=flossk-tts
 
 # Writable paths used by the app (adjust to match your config)
-ReadWritePaths=/opt/flossk-tts /var/cache/flossk-tts /var/log/flossk-tts /tmp
+ReadWritePaths=/home/flossk-tts/ /tmp
 
 LimitNOFILE=65536
 LimitNPROC=4096
