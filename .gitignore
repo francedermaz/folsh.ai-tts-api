@@ -122,6 +122,7 @@ data/
 # Application runtime
 ######################
 cache/
+models/
 config/
 *.cache
 

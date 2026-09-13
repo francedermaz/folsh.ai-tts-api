@@ -59,6 +59,23 @@ tts.cache.directory=/var/cache/flossk-tts
 # Or use relative path: tts.cache.directory=./cache
 
 # ============================================
+# Piper Backend
+# ============================================
+# true = PiperJNI (bundled natives), false = native piper CLI
+tts.piper.use-jni=true
+# Required when use-jni=false
+# tts.piper.command=/usr/local/bin/piper
+tts.piper.models-directory=./models
+tts.piper.timeout-seconds=60
+
+# ============================================
+# Text Normalization
+# ============================================
+tts.normalization.enabled=true
+tts.normalization.rules-path=./config/normalization-rules.json
+tts.normalization.rules-check-interval-ms=2000
+
+# ============================================
 # Logging Configuration
 # ============================================
 logging.level.root=INFO

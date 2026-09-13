@@ -94,7 +94,7 @@ public class EmbedController {
             userApiKey = apiKeyRepository.findById(userApiKey.getId()).orElse(userApiKey);
             
             // Normalize text before TTS
-            String normalizedText = ttsService.normalizeText(text);
+            String normalizedText = text;//ttsService.normalizeText(text);
             
             // Check with full token count first (worst case scenario)
             int fullTokensRequired = tokenCountService.countTokens(normalizedText);

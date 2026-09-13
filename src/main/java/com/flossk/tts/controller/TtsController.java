@@ -96,7 +96,7 @@ public class TtsController {
             }
             
             // Normalize text before TTS
-            String normalizedText = ttsService.normalizeText(text);
+            String normalizedText = text;
             
             UserApiKey userApiKey = (UserApiKey) request.getAttribute("userApiKey");
             
@@ -193,7 +193,7 @@ public class TtsController {
         if (requestBody.getText() == null || requestBody.getText().isBlank()) {
             return ResponseEntity.badRequest().build();
         }
-        String normalizedText = ttsService.normalizeText(requestBody.getText());
+        String normalizedText = requestBody.getText();//ttsService.normalizeText(requestBody.getText());
         return ResponseEntity.ok(new NormalizeResponse(normalizedText));
     }
     
