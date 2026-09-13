@@ -1,0 +1,33 @@
+[Unit]
+Description=Flossk TTS API Server
+After=network-online.target mysql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=flossktts
+Group=flossktts
+WorkingDirectory=/opt/flossk-tts
+
+# Adjust Java path / jar / config as needed
+ExecStart=/usr/bin/java -jar /opt/flossk-tts/flossk-tts.jar --spring.config.location=file:/opt/flossk-tts/application.properties
+
+# Auto-restart on crash / exit
+Restart=always
+RestartSec=5
+# Allow many restarts (e.g. flaky native/piper crashes)
+StartLimitIntervalSec=0
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=flossk-tts
+
+# Writable paths used by the app (adjust to match your config)
+ReadWritePaths=/opt/flossk-tts /var/cache/flossk-tts /var/log/flossk-tts /tmp
+
+LimitNOFILE=65536
+LimitNPROC=4096
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
